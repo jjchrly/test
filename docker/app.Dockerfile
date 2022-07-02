@@ -8,6 +8,6 @@ COPY index.js $HOME/
  
 WORKDIR $HOME
  
-EXPOSE 8888
+EXPOSE 8080
 CMD [ "node", "--max-http-header-size", "64000", "index.js" ]
 USER app
