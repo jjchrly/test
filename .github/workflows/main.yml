@@ -47,4 +47,4 @@ jobs:
       - name: Patch EKS deployment
         env:
           IMAGE_TAG: ${{ github.sha }}
-        run: kubectl --namespace=eks-demo-ns patch deployment eks-demo --type json -p="[{\"op\":\"replace\",\"path\":\"/spec/template/spec/containers/0/image\",\"value\":\"${{ secrets.ECR_REPO }}:$IMAGE_TAG\"}]"
+        run: kubectl --namespace=eks-demo-ns patch deployment eks-demo-ns-deployment --type json -p="[{\"op\":\"replace\",\"path\":\"/spec/template/spec/containers/0/image\",\"value\":\"${{ secrets.ECR_REPO }}:$IMAGE_TAG\"}]"
