@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Permission
-        run: git update-index --chmod=+x ./build.sh
+        run: chmod +x build.sh
       - name: Docker build        
         run: ./build.sh
       - name: AWS configure
