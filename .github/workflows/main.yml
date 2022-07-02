@@ -1,0 +1,48 @@
+name: test-workflow
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  setup:
+    runs-on: Self-Hosted
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+      - name: Install node packages
+        run: npm install
+
+  build_deploy:
+    needs: setup
+    runs-on: Self-Hosted
+    environment: dev
+
+    steps:
+      - name: Docker build
+        run: ./build.sh
+      - name: AWS configure
+        uses: aws-actions/configure-aws-credentials@13d241b293754004c80624b5567555c4a39ffbe3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@aaf69d68aa3fb14c1d5a6be9ac61fe15b48453a2
+      - name: Tag and push docker image
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker tag me-test:latest ${{ secrets.ECR_REPO }}:$IMAGE_TAG
+          docker push ${{ secrets.ECR_REPO }}:$IMAGE_TAG
+      - name: Kubeconfig
+        run: aws eks update-kubeconfig --region us-west-1 --name eks-demo
+      - name: Patch EKS deployment
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: kubectl --namespace=test-eks-app patch deployment eks-demo --type json -p="[{\"op\":\"replace\",\"path\":\"/spec/template/spec/containers/0/image\",\"value\":\"${{ secrets.ECR_REPO }}:$IMAGE_TAG\"}]"
