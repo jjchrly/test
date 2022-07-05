@@ -42,6 +42,7 @@ jobs:
         run: |
           docker tag me-test:latest ${{ secrets.ECR_REPO }}:$IMAGE_TAG
           docker push ${{ secrets.ECR_REPO }}:$IMAGE_TAG
+          echo ${{ secrets.ECR_REPO }}:$IMAGE_TAG
       - name: Kubeconfig
         run: aws eks update-kubeconfig --region us-west-1 --name eks-demo
       - name: Patch EKS deployment
